@@ -192,6 +192,32 @@
       }
     }
     loadSheetData();
+
+    document.getElementById("trainingForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("entry.1377173840", dateInput.value);
+      formData.append("entry.1855437932", partSelect.value);
+      formData.append("entry.168647639", motionSelect.value);
+      formData.append("entry.606918952", weightInput.value);
+      formData.append("entry.1939856150", repsInput.value);
+      formData.append("entry.154070812", setsInput.value);
+      formData.append("entry.856474848", totalWeightInput.value);
+      formData.append("entry.130109099", rpeSelect.value);
+
+      fetch("https://docs.google.com/forms/d/e/1FAIpQLSfdsGiw_hXbkMh7CKituuZRkcLCOXtaXPwmYkl0U0mDfMpm1w/formResponse", {
+        method: "POST",
+        mode: "no-cors",
+        body: formData
+      }).then(() => {
+        alert("✅ 成功送出訓練紀錄！");
+        document.getElementById("trainingForm").reset();
+        dateInput.value = new Date().toISOString().split('T')[0];
+        totalWeightInput.value = "";
+      }).catch(() => {
+        alert("❌ 送出失敗，請稍後再試");
+      });
+    });
   </script>
 </body>
 </html>
