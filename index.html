@@ -8,7 +8,7 @@
   <style>
     body {
       font-family: 'Noto Sans TC', 'Yu Gothic UI', sans-serif;
-      background-color: #f9f9f9;
+      background-color: #f5f5f5;
       padding: 20px;
       margin: 0;
     }
@@ -18,11 +18,20 @@
       font-size: 1.8rem;
       margin-bottom: 20px;
     }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 20px;
+    }
+    .left-panel, .right-panel {
+      flex: 1 1 400px;
+      max-width: 500px;
+    }
     form {
       background-color: #fff;
       padding: 30px 20px;
-      max-width: 480px;
-      margin: 0 auto;
       border-radius: 12px;
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
     }
@@ -64,11 +73,15 @@
       background-color: #3a7dc0;
       box-shadow: 0 3px 8px rgba(74, 144, 226, 0.3);
     }
-    #summary {
+    .highlight {
+      background-color: #e6ffe6;
+      color: #2c662d;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
       text-align: center;
-      color: #2d7a45;
-      font-weight: 600;
-      margin-top: 25px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
     }
     .progress-container {
       background-color: #eee;
@@ -83,212 +96,180 @@
       background-color: #4A90E2;
       transition: width 0.3s ease;
     }
+    #sheetData {
+      overflow-x: auto;
+      font-size: 0.95rem;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
   </style>
 </head>
 <body>
 
 <h1>重量訓練紀錄</h1>
+<div class="container">
+  <div class="left-panel">
+    <form id="trainingForm" action="https://docs.google.com/forms/d/e/1FAIpQLSfdsGiw_hXbkMh7CKituuZRkcLCOXtaXPwmYkl0U0mDfMpm1w/formResponse" method="POST" target="_blank">
 
-<form id="trainingForm" action="https://docs.google.com/forms/d/e/1FAIpQLSfdsGiw_hXbkMh7CKituuZRkcLCOXtaXPwmYkl0U0mDfMpm1w/formResponse" method="POST" target="_blank">
+      <label>訓練日期：</label>
+      <input type="date" name="entry.1377173840" id="date" required>
 
-  <label>訓練日期：</label>
-  <input type="date" name="entry.1377173840" id="date" required>
+      <label>訓練部位：</label>
+      <select id="partSelect" name="entry.1855437932" required>
+        <option value="">請選擇訓練部位</option>
+        <option value="腿部">腿部</option>
+        <option value="背部">背部</option>
+        <option value="胸部">胸部</option>
+        <option value="肩部">肩部</option>
+        <option value="手臂">手臂</option>
+        <option value="核心">核心</option>
+      </select>
 
-  <label>訓練部位：</label>
-  <select id="partSelect" name="entry.1855437932" required>
-    <option value="">請選擇訓練部位</option>
-    <option value="腿部">腿部</option>
-    <option value="背部">背部</option>
-    <option value="胸部">胸部</option>
-    <option value="肩部">肩部</option>
-    <option value="手臂">手臂</option>
-    <option value="核心">核心</option>
-  </select>
+      <label>訓練動作：</label>
+      <select id="motionSelect" name="entry.168647639" required>
+        <option value="">請先選擇訓練部位</option>
+      </select>
 
-  <label>訓練動作：</label>
-  <select id="motionSelect" name="entry.168647639" required>
-    <option value="">請先選擇訓練部位</option>
-  </select>
+      <label>單次重量（kg）：</label>
+      <input type="number" id="weight" name="entry.606918952" required>
 
-  <label>單次重量（kg）：</label>
-  <input type="number" id="weight" name="entry.606918952" required>
+      <label>每組次數（reps）：</label>
+      <input type="number" id="reps" name="entry.1939856150" required>
 
-  <label>每組次數（reps）：</label>
-  <input type="number" id="reps" name="entry.1939856150" required>
+      <label>組數（sets）：</label>
+      <input type="number" id="sets" name="entry.154070812" required>
 
-  <label>組數（sets）：</label>
-  <input type="number" id="sets" name="entry.154070812" required>
+      <label>總重量（自動計算）：</label>
+      <input type="number" id="totalWeight" name="entry.856474848" readonly required>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
 
-  <label>總重量（自動計算）：</label>
-  <input type="number" id="totalWeight" name="entry.856474848" readonly required>
-  <div class="progress-container">
-    <div class="progress-bar" id="progressBar"></div>
+      <label>主觀疲勞（RPE）：</label>
+      <select name="entry.130109099" id="rpeSelect" required>
+        <option value="">請選擇 1～10</option>
+        <option value="1">1 - 非常輕鬆</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5 - 適中</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10 - 使盡全力</option>
+      </select>
+
+      <button type="submit">送出紀錄</button>
+    </form>
   </div>
 
-  <label>主觀疲勞（RPE）：</label>
-  <select name="entry.130109099" id="rpeSelect" required>
-    <option value="">請選擇 1～10</option>
-    <option value="1">1 - 非常輕鬆</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5 - 適中</option>
-    <option value="6">6</option>
-    <option value="7">7</option>
-    <option value="8">8</option>
-    <option value="9">9</option>
-    <option value="10">10 - 使盡全力</option>
-  </select>
-
-  <button type="submit">送出紀錄</button>
-</form>
-
-<div id="summary"></div>
-
-<script>
-  const motionOptions = {
-    "腿部": ["深蹲", "硬舉", "腿推", "弓箭步", "髖推"],
-    "背部": ["引體向上", "滑輪下拉", "槓鈴划船", "啞鈴划船", "坐姿划船"],
-    "胸部": ["槓鈴臥推", "啞鈴飛鳥", "上斜臥推"],
-    "肩部": ["槓鈴推舉", "啞鈴推舉", "側平舉", "啞鈴前平舉"],
-    "手臂": ["槓鈴彎舉", "啞鈴彎舉", "繩索下壓"],
-    "核心": ["仰臥起坐", "捲腹", "棒式"]
-  };
-
-  const partSelect = document.getElementById('partSelect');
-  const motionSelect = document.getElementById('motionSelect');
-  const weightInput = document.getElementById('weight');
-  const repsInput = document.getElementById('reps');
-  const setsInput = document.getElementById('sets');
-  const totalWeightInput = document.getElementById('totalWeight');
-  const rpeSelect = document.getElementById('rpeSelect');
-  const form = document.getElementById('trainingForm');
-  const summary = document.getElementById('summary');
-  const dateInput = document.getElementById('date');
-  const progressBar = document.getElementById('progressBar');
-
-  const MAX_WEIGHT = 10000;
-
-  // 日期自動填入今天
-  dateInput.value = new Date().toISOString().split('T')[0];
-
-  // 動作下拉選單根據部位變化
-  partSelect.addEventListener('change', () => {
-    const selectedPart = partSelect.value;
-    motionSelect.innerHTML = '<option value="">請選擇訓練動作</option>';
-    if (motionOptions[selectedPart]) {
-      motionOptions[selectedPart].forEach(motion => {
-        const opt = document.createElement('option');
-        opt.value = motion;
-        opt.textContent = motion;
-        motionSelect.appendChild(opt);
-      });
-    }
-    saveInputs();
-  });
-
-  // RPE 顏色切換
-  rpeSelect.addEventListener('change', () => {
-    const val = parseInt(rpeSelect.value);
-    rpeSelect.style.backgroundColor =
-      val >= 8 ? '#ffcccc' :
-      val >= 4 ? '#fff0b3' :
-      val >= 1 ? '#d6f5d6' : '#fafafa';
-    saveInputs();
-  });
-
-  function calculateTotal() {
-    const weight = parseFloat(weightInput.value) || 0;
-    const reps = parseInt(repsInput.value) || 0;
-    const sets = parseInt(setsInput.value) || 0;
-    const total = weight * reps * sets;
-    totalWeightInput.value = total.toFixed(1);
-    updateProgressBar(total);
-  }
-
-  function updateProgressBar(value) {
-    const percent = Math.min((value / MAX_WEIGHT) * 100, 100);
-    progressBar.style.width = percent + '%';
-  }
-
-  weightInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
-  repsInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
-  setsInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
-  motionSelect.addEventListener('change', saveInputs);
-
-  function saveInputs() {
-    const data = {
-      part: partSelect.value,
-      motion: motionSelect.value,
-      weight: weightInput.value,
-      reps: repsInput.value,
-      sets: setsInput.value,
-      rpe: rpeSelect.value
-    };
-    localStorage.setItem('lastTraining', JSON.stringify(data));
-  }
-
-  function loadInputs() {
-    const saved = JSON.parse(localStorage.getItem('lastTraining'));
-    if (saved) {
-      partSelect.value = saved.part;
-      partSelect.dispatchEvent(new Event('change'));
-      setTimeout(() => { motionSelect.value = saved.motion; }, 100);
-      weightInput.value = saved.weight;
-      repsInput.value = saved.reps;
-      setsInput.value = saved.sets;
-      rpeSelect.value = saved.rpe || '';
-      rpeSelect.dispatchEvent(new Event('change'));
-      calculateTotal();
-    }
-  }
-
-  loadInputs();
-
-  form.addEventListener('submit', () => {
-    const part = partSelect.value;
-    const motion = motionSelect.value;
-    const total = totalWeightInput.value;
-    const rpe = rpeSelect.value;
-    summary.textContent = `✅ 已送出：${part} - ${motion}，總重量：${total} 公斤，RPE：${rpe}`;
-  });
-</script>
-<!-- 訓練紀錄摘要表格 -->
-<div style="max-width: 800px; margin: 60px auto 20px; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px;">
-  <h2 style="text-align: center; color: #333;">📊 訓練紀錄摘要</h2>
-  <div id="sheetData" style="overflow-x:auto; font-size: 0.95rem; line-height: 1.6;">讀取中...</div>
+  <div class="right-panel">
+    <div class="highlight">
+      🏆 今日腿部最高重量：<strong>900 kg</strong>
+    </div>
+    <h2 style="text-align:center">📊 訓練紀錄摘要</h2>
+    <div id="sheetData">讀取中...</div>
+  </div>
 </div>
 
 <script>
-  async function loadSheetData() {
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQL3qOJuvxEclz0Rc_5vvNGRt9F9zDoUNdeBY0hbgyrixMs1wh93UMlT5vUeYU4pzBuX_i_PFzQ1NDB/pub?gid=1510297865&single=true&output=csv";
-    try {
-      const res = await fetch(csvUrl);
-      const text = await res.text();
-      const rows = text.trim().split("\n").map(row => row.split(","));
+const motionOptions = {
+  "腿部": ["深蹲", "硬舉", "腿推", "弓箭步", "髖推"],
+  "背部": ["引體向上", "滑輪下拉", "槓鈴划船", "啞鈴划船", "坐姿划船"],
+  "胸部": ["槓鈴臥推", "啞鈴飛鳥", "上斜臥推"],
+  "肩部": ["槓鈴推舉", "啞鈴推舉", "側平舉", "啞鈴前平舉"],
+  "手臂": ["槓鈴彎舉", "啞鈴彎舉", "繩索下壓"],
+  "核心": ["仰臥起坐", "捲腹", "棒式"]
+};
 
-      let html = '<table style="width:100%; border-collapse:collapse;">';
-      html += '<thead><tr style="background:#f2f2f2;">';
-      rows[0].forEach(col => {
-        html += `<th style="padding:8px; border:1px solid #ccc;">${col}</th>`;
-      });
-      html += '</tr></thead><tbody>';
-      for (let i = 1; i < rows.length; i++) {
-        html += '<tr>';
-        rows[i].forEach(col => {
-          html += `<td style="padding:8px; border:1px solid #ddd;">${col}</td>`;
-        });
-        html += '</tr>';
-      }
-      html += '</tbody></table>';
+const partSelect = document.getElementById('partSelect');
+const motionSelect = document.getElementById('motionSelect');
+const weightInput = document.getElementById('weight');
+const repsInput = document.getElementById('reps');
+const setsInput = document.getElementById('sets');
+const totalWeightInput = document.getElementById('totalWeight');
+const rpeSelect = document.getElementById('rpeSelect');
+const form = document.getElementById('trainingForm');
+const progressBar = document.getElementById('progressBar');
+const dateInput = document.getElementById('date');
 
-      document.getElementById("sheetData").innerHTML = html;
-    } catch (err) {
-      document.getElementById("sheetData").innerHTML = "❌ 載入失敗，請確認表格網址是否正確或允許公開訪問";
-    }
+const MAX_WEIGHT = 10000;
+
+dateInput.value = new Date().toISOString().split('T')[0];
+
+partSelect.addEventListener('change', () => {
+  const selectedPart = partSelect.value;
+  motionSelect.innerHTML = '<option value="">請選擇訓練動作</option>';
+  if (motionOptions[selectedPart]) {
+    motionOptions[selectedPart].forEach(motion => {
+      const opt = document.createElement('option');
+      opt.value = motion;
+      opt.textContent = motion;
+      motionSelect.appendChild(opt);
+    });
   }
+  saveInputs();
+});
 
-  loadSheetData();
+rpeSelect.addEventListener('change', () => {
+  const val = parseInt(rpeSelect.value);
+  rpeSelect.style.backgroundColor =
+    val >= 8 ? '#ffcccc' :
+    val >= 4 ? '#fff0b3' :
+    val >= 1 ? '#d6f5d6' : '#fafafa';
+  saveInputs();
+});
+
+function calculateTotal() {
+  const weight = parseFloat(weightInput.value) || 0;
+  const reps = parseInt(repsInput.value) || 0;
+  const sets = parseInt(setsInput.value) || 0;
+  const total = weight * reps * sets;
+  totalWeightInput.value = total.toFixed(1);
+  updateProgressBar(total);
+}
+
+function updateProgressBar(value) {
+  const percent = Math.min((value / MAX_WEIGHT) * 100, 100);
+  progressBar.style.width = percent + '%';
+}
+
+weightInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
+repsInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
+setsInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
+motionSelect.addEventListener('change', saveInputs);
+
+function saveInputs() {
+  const data = {
+    part: partSelect.value,
+    motion: motionSelect.value,
+    weight: weightInput.value,
+    reps: repsInput.value,
+    sets: setsInput.value,
+    rpe: rpeSelect.value
+  };
+  localStorage.setItem('lastTraining', JSON.stringify(data));
+}
+
+function loadInputs() {
+  const saved = JSON.parse(localStorage.getItem('lastTraining'));
+  if (saved) {
+    partSelect.value = saved.part;
+    partSelect.dispatchEvent(new Event('change'));
+    setTimeout(() => { motionSelect.value = saved.motion; }, 100);
+    weightInput.value = saved.weight;
+    repsInput.value = saved.reps;
+    setsInput.value = saved.sets;
+    rpeSelect.value = saved.rpe || '';
+    rpeSelect.dispatchEvent(new Event('change'));
+    calculateTotal();
+  }
+}
+
+loadInputs();
 </script>
 
 </body>
