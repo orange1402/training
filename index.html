@@ -1,0 +1,206 @@
+<!-- 請將以下內容儲存為 training.html 開啟使用 -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>重量訓練紀錄</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f8f8f8;
+      padding: 20px;
+    }
+    form {
+      background-color: #fff;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    select, input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #summary {
+      text-align: center;
+      color: green;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<h1 style="text-align:center;">重量訓練紀錄</h1>
+
+<form id="trainingForm" action="https://docs.google.com/forms/d/e/1FAIpQLSfdsGiw_hXbkMh7CKituuZRkcLCOXtaXPwmYkl0U0mDfMpm1w/formResponse" method="POST" target="_blank">
+
+  <label>訓練日期：</label>
+  <input type="date" name="entry.1377173840" id="date" required>
+
+  <label>訓練部位：</label>
+  <select id="partSelect" name="entry.1855437932" required>
+    <option value="">請選擇訓練部位</option>
+    <option value="腿部">腿部</option>
+    <option value="背部">背部</option>
+    <option value="胸部">胸部</option>
+    <option value="肩部">肩部</option>
+    <option value="手臂">手臂</option>
+    <option value="核心">核心</option>
+  </select>
+
+  <label>訓練動作：</label>
+  <select id="motionSelect" name="entry.168647639" required>
+    <option value="">請先選擇訓練部位</option>
+  </select>
+
+  <label>單次重量（kg）：</label>
+  <input type="number" id="weight" name="entry.606918952" required>
+
+  <label>每組次數（reps）：</label>
+  <input type="number" id="reps" name="entry.1939856150" required>
+
+  <label>組數（sets）：</label>
+  <input type="number" id="sets" name="entry.154070812" required>
+
+  <label>總重量（自動計算）：</label>
+  <input type="number" id="totalWeight" name="entry.856474848" readonly required>
+
+  <label>主觀疲勞（RPE）：</label>
+  <select name="entry.130109099" id="rpeSelect" required>
+    <option value="">請選擇 1～10</option>
+    <option value="1">1 - 非常輕鬆</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5 - 適中</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10 - 使盡全力</option>
+  </select>
+
+  <button type="submit">送出紀錄</button>
+</form>
+
+<div id="summary"></div>
+
+<script>
+  const motionOptions = {
+    "腿部": ["深蹲", "硬舉", "腿推", "弓箭步", "髖推"],
+    "背部": ["引體向上", "槓鈴划船", "啞鈴划船", "坐姿划船"],
+    "胸部": ["槓鈴臥推", "啞鈴飛鳥", "上斜臥推"],
+    "肩部": ["側平舉", "槓鈴推舉", "啞鈴前平舉"],
+    "手臂": ["啞鈴彎舉", "繩索下壓", "槓鈴彎舉"],
+    "核心": ["仰臥起坐", "捲腹", "棒式"]
+  };
+
+  const partSelect = document.getElementById('partSelect');
+  const motionSelect = document.getElementById('motionSelect');
+  const weightInput = document.getElementById('weight');
+  const repsInput = document.getElementById('reps');
+  const setsInput = document.getElementById('sets');
+  const totalWeightInput = document.getElementById('totalWeight');
+  const rpeSelect = document.getElementById('rpeSelect');
+  const form = document.getElementById('trainingForm');
+  const summary = document.getElementById('summary');
+  const dateInput = document.getElementById('date');
+
+  // 📅 填入今天日期
+  const today = new Date().toISOString().split('T')[0];
+  dateInput.value = today;
+
+  // 動作選單更新
+  partSelect.addEventListener('change', () => {
+    const selectedPart = partSelect.value;
+    motionSelect.innerHTML = '<option value="">請選擇訓練動作</option>';
+    if (motionOptions[selectedPart]) {
+      motionOptions[selectedPart].forEach(motion => {
+        const opt = document.createElement('option');
+        opt.value = motion;
+        opt.textContent = motion;
+        motionSelect.appendChild(opt);
+      });
+    }
+    saveInputs(); // 更新 localStorage
+  });
+
+  // 自動計算總重量
+  function calculateTotal() {
+    const weight = parseFloat(weightInput.value) || 0;
+    const reps = parseInt(repsInput.value) || 0;
+    const sets = parseInt(setsInput.value) || 0;
+    const total = weight * reps * sets;
+    totalWeightInput.value = total.toFixed(1);
+  }
+
+  weightInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
+  repsInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
+  setsInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
+  motionSelect.addEventListener('change', saveInputs);
+  rpeSelect.addEventListener('change', saveInputs);
+
+  // 儲存資料到 localStorage
+  function saveInputs() {
+    const data = {
+      part: partSelect.value,
+      motion: motionSelect.value,
+      weight: weightInput.value,
+      reps: repsInput.value,
+      sets: setsInput.value,
+      rpe: rpeSelect.value
+    };
+    localStorage.setItem('lastTraining', JSON.stringify(data));
+  }
+
+  // 載入資料
+  function loadInputs() {
+    const saved = JSON.parse(localStorage.getItem('lastTraining'));
+    if (saved) {
+      partSelect.value = saved.part;
+      partSelect.dispatchEvent(new Event('change')); // 觸發動作選單重建
+      setTimeout(() => {
+        motionSelect.value = saved.motion;
+      }, 100); // 等待選單完成
+      weightInput.value = saved.weight;
+      repsInput.value = saved.reps;
+      setsInput.value = saved.sets;
+      rpeSelect.value = saved.rpe || '';
+      calculateTotal();
+    }
+  }
+
+  loadInputs();
+
+  // 顯示送出摘要
+  form.addEventListener('submit', () => {
+    const part = partSelect.value;
+    const motion = motionSelect.value;
+    const total = totalWeightInput.value;
+    const rpe = rpeSelect.value;
+    summary.textContent = `✅ 已送出：${part} - ${motion}，總重量：${total} 公斤，RPE：${rpe}`;
+  });
+</script>
+
+</body>
+</html>
