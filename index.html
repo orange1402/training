@@ -1,56 +1,93 @@
-<!-- 請將以下內容儲存為 training.html 開啟使用 -->
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <title>重量訓練紀錄</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: sans-serif;
-      background-color: #f8f8f8;
+      font-family: 'Noto Sans TC', 'Yu Gothic UI', sans-serif;
+      background-color: #f9f9f9;
       padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      color: #222;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
     }
     form {
       background-color: #fff;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 30px 20px;
+      max-width: 480px;
+      margin: 0 auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
     }
     label {
       display: block;
       margin-top: 15px;
+      color: #333;
+      font-weight: 500;
+      font-size: 0.95rem;
     }
-    select, input {
+    input, select {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      background-color: #fafafa;
+      transition: border-color 0.3s;
+    }
+    input:focus, select:focus {
+      border-color: #4A90E2;
+      outline: none;
+      background-color: #fff;
     }
     button {
-      margin-top: 20px;
-      padding: 10px;
+      margin-top: 25px;
+      padding: 12px;
       width: 100%;
-      background-color: #007bff;
+      background-color: #4A90E2;
       color: white;
-      font-size: 16px;
+      font-size: 1rem;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s, box-shadow 0.2s;
     }
     button:hover {
-      background-color: #0056b3;
+      background-color: #3a7dc0;
+      box-shadow: 0 3px 8px rgba(74, 144, 226, 0.3);
     }
     #summary {
       text-align: center;
-      color: green;
-      font-weight: bold;
-      margin-top: 20px;
+      color: #2d7a45;
+      font-weight: 600;
+      margin-top: 25px;
+    }
+    .progress-container {
+      background-color: #eee;
+      border-radius: 6px;
+      overflow: hidden;
+      height: 20px;
+      margin-top: 10px;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: #4A90E2;
+      transition: width 0.3s ease;
     }
   </style>
 </head>
 <body>
 
-<h1 style="text-align:center;">重量訓練紀錄</h1>
+<h1>重量訓練紀錄</h1>
 
 <form id="trainingForm" action="https://docs.google.com/forms/d/e/1FAIpQLSfdsGiw_hXbkMh7CKituuZRkcLCOXtaXPwmYkl0U0mDfMpm1w/formResponse" method="POST" target="_blank">
 
@@ -84,6 +121,9 @@
 
   <label>總重量（自動計算）：</label>
   <input type="number" id="totalWeight" name="entry.856474848" readonly required>
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
 
   <label>主觀疲勞（RPE）：</label>
   <select name="entry.130109099" id="rpeSelect" required>
@@ -125,12 +165,14 @@
   const form = document.getElementById('trainingForm');
   const summary = document.getElementById('summary');
   const dateInput = document.getElementById('date');
+  const progressBar = document.getElementById('progressBar');
 
-  // 📅 填入今天日期
-  const today = new Date().toISOString().split('T')[0];
-  dateInput.value = today;
+  const MAX_WEIGHT = 10000;
 
-  // 動作選單更新
+  // 日期自動填入今天
+  dateInput.value = new Date().toISOString().split('T')[0];
+
+  // 動作下拉選單根據部位變化
   partSelect.addEventListener('change', () => {
     const selectedPart = partSelect.value;
     motionSelect.innerHTML = '<option value="">請選擇訓練動作</option>';
@@ -142,25 +184,38 @@
         motionSelect.appendChild(opt);
       });
     }
-    saveInputs(); // 更新 localStorage
+    saveInputs();
   });
 
-  // 自動計算總重量
+  // RPE 顏色切換
+  rpeSelect.addEventListener('change', () => {
+    const val = parseInt(rpeSelect.value);
+    rpeSelect.style.backgroundColor =
+      val >= 8 ? '#ffcccc' :
+      val >= 4 ? '#fff0b3' :
+      val >= 1 ? '#d6f5d6' : '#fafafa';
+    saveInputs();
+  });
+
   function calculateTotal() {
     const weight = parseFloat(weightInput.value) || 0;
     const reps = parseInt(repsInput.value) || 0;
     const sets = parseInt(setsInput.value) || 0;
     const total = weight * reps * sets;
     totalWeightInput.value = total.toFixed(1);
+    updateProgressBar(total);
+  }
+
+  function updateProgressBar(value) {
+    const percent = Math.min((value / MAX_WEIGHT) * 100, 100);
+    progressBar.style.width = percent + '%';
   }
 
   weightInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
   repsInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
   setsInput.addEventListener('input', () => { calculateTotal(); saveInputs(); });
   motionSelect.addEventListener('change', saveInputs);
-  rpeSelect.addEventListener('change', saveInputs);
 
-  // 儲存資料到 localStorage
   function saveInputs() {
     const data = {
       part: partSelect.value,
@@ -173,26 +228,23 @@
     localStorage.setItem('lastTraining', JSON.stringify(data));
   }
 
-  // 載入資料
   function loadInputs() {
     const saved = JSON.parse(localStorage.getItem('lastTraining'));
     if (saved) {
       partSelect.value = saved.part;
-      partSelect.dispatchEvent(new Event('change')); // 觸發動作選單重建
-      setTimeout(() => {
-        motionSelect.value = saved.motion;
-      }, 100); // 等待選單完成
+      partSelect.dispatchEvent(new Event('change'));
+      setTimeout(() => { motionSelect.value = saved.motion; }, 100);
       weightInput.value = saved.weight;
       repsInput.value = saved.reps;
       setsInput.value = saved.sets;
       rpeSelect.value = saved.rpe || '';
+      rpeSelect.dispatchEvent(new Event('change'));
       calculateTotal();
     }
   }
 
   loadInputs();
 
-  // 顯示送出摘要
   form.addEventListener('submit', () => {
     const part = partSelect.value;
     const motion = motionSelect.value;
