@@ -52,23 +52,29 @@
       font-size: 1rem;
       cursor: pointer;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
     .summary-title {
       font-weight: bold;
       font-size: 1.2rem;
       margin-bottom: 10px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .data-card {
+      background: #f9f9f9;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .data-card .label {
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+    .data-card .value {
+      font-size: 1.1rem;
+      color: #333;
     }
   </style>
 </head>
@@ -115,7 +121,7 @@
 
     <div class="card">
       <div class="summary-title">📊 訓練紀錄摘要</div>
-      <div id="sheetData">讀取中...</div>
+      <div id="sheetData" class="grid">讀取中...</div>
     </div>
   </div>
 
@@ -131,12 +137,12 @@
     dateInput.value = new Date().toISOString().split('T')[0];
 
     const motionOptions = {
-      "腿部": ["深蹲", "腿推", "弓箭步"],
+      "腿部": ["深蹲", "硬舉", "腿推"],
       "背部": ["引體向上", "滑輪下拉"],
       "胸部": ["槓鈴臥推", "啞鈴飛鳥"],
-      "肩部": ["側平舉", "肩推"],
-      "手臂": ["彎舉", "下壓"],
-      "核心": ["仰臥起坐", "棒式"]
+      "肩部": ["肩推", "側平舉"],
+      "手臂": ["二頭彎舉", "下壓"],
+      "核心": ["仰臥起坐", "捲腹", "棒式"]
     };
 
     partSelect.addEventListener('change', () => {
@@ -163,24 +169,26 @@
 
     async function loadSheetData() {
       const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQL3qOJuvxEclz0Rc_5vvNGRt9F9zDoUNdeBY0hbgyrixMs1wh93UMlT5vUeYU4pzBuX_i_PFzQ1NDB/pub?gid=1510297865&single=true&output=csv";
+      const keys = ["腿部總重","背部總重","胸部總重","肩部總重","手臂總重","深蹲總重","深蹲RM","硬舉總重","硬舉RM","槓鈴臥推總重","槓鈴臥推RM","引體向上次數","滑輪下拉總重","滑輪下拉RM","槓鈴划船總重","槓鈴划船RM","捲腹次數"];
       try {
         const res = await fetch(csvUrl);
         const text = await res.text();
         const rows = text.trim().split("\n").map(r => r.split(","));
-        let html = '<table><thead><tr>';
-        rows[0].forEach(col => html += `<th>${col}</th>`);
-        html += '</tr></thead><tbody>';
+        const data = {};
         for (let i = 1; i < rows.length; i++) {
-          if (rows[i][1] && rows[i][1] !== '#N/A') {
-            html += '<tr>';
-            rows[i].forEach(col => html += `<td>${col}</td>`);
-            html += '</tr>';
+          const item = rows[i][0];
+          const value = rows[i][1];
+          if (keys.includes(item)) {
+            data[item] = value;
           }
         }
-        html += '</tbody></table>';
+        let html = "";
+        keys.forEach(k => {
+          html += `<div class="data-card"><div class="label">${k}</div><div class="value">${data[k] || 'N/A'}</div></div>`;
+        });
         document.getElementById("sheetData").innerHTML = html;
       } catch {
-        document.getElementById("sheetData").innerHTML = '❌ 載入失敗，請確認試算表權限或網址正確';
+        document.getElementById("sheetData").innerHTML = '❌ 載入失敗';
       }
     }
     loadSheetData();
