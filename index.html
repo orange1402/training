@@ -202,9 +202,14 @@
 		  "捲腹次數": "🤸"
 		};
         let html = "";
-        keys.forEach(k => {
-          html += `<div class="data-card"><div class="label">${k}</div><div class="value">${data[k] || 'N/A'}</div></div>`;
-        });
+	keys.forEach(k => {
+	  const icon = iconMap[k] || ""; // 插入 icon
+	  html += `
+	    <div class="data-card">
+	      <div class="label">${icon} ${k}</div>
+	      <div class="value">${data[k] || 'N/A'}</div>
+	    </div>`;
+	});
         document.getElementById("sheetData").innerHTML = html;
       } catch {
         document.getElementById("sheetData").innerHTML = '❌ 載入失敗';
