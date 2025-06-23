@@ -253,6 +253,43 @@
     summary.textContent = `✅ 已送出：${part} - ${motion}，總重量：${total} 公斤，RPE：${rpe}`;
   });
 </script>
+<!-- 訓練紀錄摘要表格 -->
+<div style="max-width: 800px; margin: 60px auto 20px; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px;">
+  <h2 style="text-align: center; color: #333;">📊 訓練紀錄摘要</h2>
+  <div id="sheetData" style="overflow-x:auto; font-size: 0.95rem; line-height: 1.6;">讀取中...</div>
+</div>
+
+<script>
+  async function loadSheetData() {
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQL3qOJuvxEclz0Rc_5vvNGRt9F9zDoUNdeBY0hbgyrixMs1wh93UMlT5vUeYU4pzBuX_i_PFzQ1NDB/pub?gid=1510297865&single=true&output=csv";
+    try {
+      const res = await fetch(csvUrl);
+      const text = await res.text();
+      const rows = text.trim().split("\n").map(row => row.split(","));
+
+      let html = '<table style="width:100%; border-collapse:collapse;">';
+      html += '<thead><tr style="background:#f2f2f2;">';
+      rows[0].forEach(col => {
+        html += `<th style="padding:8px; border:1px solid #ccc;">${col}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+      for (let i = 1; i < rows.length; i++) {
+        html += '<tr>';
+        rows[i].forEach(col => {
+          html += `<td style="padding:8px; border:1px solid #ddd;">${col}</td>`;
+        });
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+
+      document.getElementById("sheetData").innerHTML = html;
+    } catch (err) {
+      document.getElementById("sheetData").innerHTML = "❌ 載入失敗，請確認表格網址是否正確或允許公開訪問";
+    }
+  }
+
+  loadSheetData();
+</script>
 
 </body>
 </html>
