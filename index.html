@@ -204,10 +204,12 @@
         let html = "";
 	keys.forEach(k => {
 	  const icon = iconMap[k] || ""; // 插入 icon
+	  const date = data[k + "日期"]; // 嘗試抓取對應日期
 	  html += `
 	    <div class="data-card">
 	      <div class="label">${icon} ${k}</div>
 	      <div class="value">${data[k] || 'N/A'}</div>
+	      ${date ? `<div class="date">📅 ${date}</div>` : ""}
 	    </div>`;
 	});
         document.getElementById("sheetData").innerHTML = html;
