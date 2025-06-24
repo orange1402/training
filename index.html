@@ -62,31 +62,44 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
-    .data-card {
-      background: #f9f9f9;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
-    .data-card .label {
-      font-weight: bold;
-      font-size: 0.95rem;
-    }
-    .data-card .value {
-      font-size: 1.1rem;
-      color: #333;
-    }
-	.data-card .date {
-	  font-size: 0.85rem;
-	  color: #888;
-	  margin-top: 4px;
-	}
-	.row {
-	  display: flex;
-	  justify-content: space-between;
-	  align-items: center;
-	  font-size: 1.1rem;
-	}	
+@media (max-width: 500px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+.data-card {
+  background: #f9f9f9;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.label {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.value {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-weight: normal;
+  color: #333;
+}
+
+.date {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 4px;
+}
   </style>
 </head>
 <body>
@@ -248,6 +261,7 @@ async function loadSheetData() {
 	    </div>
 	    ${date ? `<div class="date">📅 ${date}</div>` : ""}
 	  </div>`;
+
     });
 
     document.getElementById("sheetData").innerHTML = html;
