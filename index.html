@@ -171,57 +171,80 @@
     weightInput.addEventListener('input', calculateTotal);
     repsInput.addEventListener('input', calculateTotal);
     setsInput.addEventListener('input', calculateTotal);
+async function loadSheetData() {
+  const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQL3qOJuvxEclz0Rc_5vvNGRt9F9zDoUNdeBY0hbgyrixMs1wh93UMlT5vUeYU4pzBuX_i_PFzQ1NDB/pub?gid=1510297865&single=true&output=csv";
 
-    async function loadSheetData() {
-      const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQL3qOJuvxEclz0Rc_5vvNGRt9F9zDoUNdeBY0hbgyrixMs1wh93UMlT5vUeYU4pzBuX_i_PFzQ1NDB/pub?gid=1510297865&single=true&output=csv";
-      const keys = ["腿部總重","背部總重","胸部總重","肩部總重","手臂總重","深蹲總重","深蹲RM","硬舉總重","硬舉RM","槓鈴臥推總重","槓鈴臥推RM","引體向上次數","滑輪下拉總重","滑輪下拉RM","槓鈴划船總重","槓鈴划船RM","捲腹次數"];
-      try {
-        const res = await fetch(csvUrl);
-        const text = await res.text();
-        const rows = text.trim().split("\n").map(r => r.split(","));
-        const data = {};
-        for (let i = 1; i < rows.length; i++) {
-          const item = rows[i][0];
-          const value = rows[i][1];
-          if (keys.includes(item)) {
-            data[item] = value;
-          }
-        }
-		const iconMap = {
-		  "腿部總重": "🦵",
-		  "背部總重": "💪",
-		  "胸部總重": "🛏️",
-		  "肩部總重": "🧍‍",
-		  "手臂總重": "💪",
-		  "深蹲總重": "🏋️‍",
-		  "深蹲RM": "🏋️‍🎯",
-		  "硬舉總重": "🏆",
-		  "硬舉RM": "🎯",
-		  "槓鈴臥推總重": "🛏️",
-		  "槓鈴臥推RM": "🛏️🎯",
-		  "引體向上次數": "🧗‍",
-		  "滑輪下拉總重": "🎣",
-		  "滑輪下拉RM": "🎣🎯",
-		  "槓鈴划船總重": "🚣‍",
-		  "槓鈴划船RM": "🚣🎯",
-		  "捲腹次數": "🤸"
-		};
-        let html = "";
-	keys.forEach(k => {
-	  const icon = iconMap[k] || ""; // 插入 icon
-	  const date = data[k + "日期"]; // 嘗試抓取對應日期
-	  html += `
-	    <div class="data-card">
-	      <div class="label">${icon} ${k}</div>
-	      <div class="value">${data[k] || 'N/A'}</div>
-	      ${date ? `<div class="date">📅 ${date}</div>` : ""}
-	    </div>`;
-	});
-        document.getElementById("sheetData").innerHTML = html;
-      } catch {
-        document.getElementById("sheetData").innerHTML = '❌ 載入失敗';
-      }
+  // 以成對方式列出主項與其日期欄位
+  const keys = [
+    ["腿部總重", "腿部總重日期"],
+    ["背部總重", "背部總重日期"],
+    ["胸部總重", "胸部總重日期"],
+    ["肩部總重", "肩部總重日期"],
+    ["手臂總重", "手臂總重日期"],
+    ["深蹲總重", "深蹲總重日期"],
+    ["深蹲RM", "深蹲RM日期"],
+    ["硬舉總重", "硬舉總重日期"],
+    ["硬舉RM", "硬舉RM日期"],
+    ["槓鈴臥推總重", "槓鈴臥推總重日期"],
+    ["槓鈴臥推RM", "槓鈴臥推RM日期"],
+    ["引體向上次數", "引體向上次數日期"],
+    ["滑輪下拉總重", "滑輪下拉總重日期"],
+    ["滑輪下拉RM", "滑輪下拉RM日期"],
+    ["槓鈴划船總重", "槓鈴划船總重日期"],
+    ["槓鈴划船RM", "槓鈴划船RM日期"],
+    ["捲腹次數", "捲腹次數日期"]
+  ];
+
+  const iconMap = {
+    "腿部總重": "🦵",
+    "背部總重": "💪",
+    "胸部總重": "🛏️",
+    "肩部總重": "🧍‍",
+    "手臂總重": "💪",
+    "深蹲總重": "🏋️‍",
+    "深蹲RM": "🏋️‍🎯",
+    "硬舉總重": "🏆",
+    "硬舉RM": "🎯",
+    "槓鈴臥推總重": "🛏️",
+    "槓鈴臥推RM": "🛏️🎯",
+    "引體向上次數": "🧗‍",
+    "滑輪下拉總重": "🎣",
+    "滑輪下拉RM": "🎣🎯",
+    "槓鈴划船總重": "🚣‍",
+    "槓鈴划船RM": "🚣🎯",
+    "捲腹次數": "🤸"
+  };
+
+  try {
+    const res = await fetch(csvUrl);
+    const text = await res.text();
+    const rows = text.trim().split("\n").map(r => r.split(","));
+    const data = {};
+    for (let i = 1; i < rows.length; i++) {
+      const item = rows[i][0];
+      const value = rows[i][1];
+      data[item] = value;
     }
+
+    let html = "";
+    keys.forEach(([mainKey, dateKey]) => {
+      const icon = iconMap[mainKey] || "";
+      const value = data[mainKey] || "N/A";
+      const date = data[dateKey] || "";
+
+      html += `
+        <div class="data-card">
+          <div class="label">${icon} ${mainKey}</div>
+          <div class="value">${value}</div>
+          ${date ? `<div class="date">📅 ${date}</div>` : ""}
+        </div>`;
+    });
+
+    document.getElementById("sheetData").innerHTML = html;
+  } catch {
+    document.getElementById("sheetData").innerHTML = '❌ 載入失敗';
+  }
+}
     loadSheetData();
 
     document.getElementById("trainingForm").addEventListener("submit", function (e) {
